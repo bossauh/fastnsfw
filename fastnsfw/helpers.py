@@ -16,7 +16,8 @@ VIDEO_MAPPINGS = {
     "video/ogg": ".ogv",
     "video/mp2t": ".ts",
     "video/webm": ".webm",
-    "video/x-matroska": ".mkv"
+    "video/x-matroska": ".mkv",
+    "video/quicktime": ".mov"
 }
 
 
