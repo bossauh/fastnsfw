@@ -7,8 +7,8 @@ setup(
     description="NSFW Detection Library",
     author="Philippe Mathew",
     author_email="philmattdev@gmail.com",
-    url="PUT",
-    download_url="PUT",
+    url="https://github.com/bossauh/fastnsfw",
+    download_url="https://github.com/bossauh/fastnsfw/archive/refs/tags/v_01.tar.gz",
     keywords=["nsfw", "detection"],
     install_requires=[
         "nsfw-model @ git+https://github.com/GantMan/nsfw_model.git",
