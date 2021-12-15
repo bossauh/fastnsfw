@@ -25,6 +25,7 @@ class Classifier:
         # Params
         self.frameUniqueness = kwargs.get('frameUniqueness', 5)
         self.imgSize = kwargs.get("imgSize", (224, 224))
+        self.workers = kwargs.get("workers", 4)
 
     def classify(self, url: str) -> str:
         """
@@ -106,7 +107,7 @@ class Classifier:
                 tmp.write(r.content)
                 tmp.close()
 
-                frames = helpers.extractVideoFrames(path, self.logging, self.frameUniqueness)
+                frames = helpers.extractVideoFrames(path, self.logging, self.frameUniqueness, self.workers)
                 os.unlink(path)
     
         if predictionType == "multiple":

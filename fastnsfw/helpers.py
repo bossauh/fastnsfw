@@ -3,10 +3,12 @@ import cv2
 import io
 import time
 import imagehash
+import threading
 import cv2
 from contextlib import contextmanager
 from PIL import Image
 from fluxhelper import Logger
+from queue import Queue
 
 
 VIDEO_MAPPINGS = {
@@ -56,7 +58,7 @@ def extractGifFrames(filelike: io.BytesIO, logging: Logger, uniqueness: float) -
 
             if go:
                 frames.append((img, hashed))
-                
+
     end = round((time.time() - start) * 1000, 2)
     if logging:
         logging.debug(f"Extracted {len(frames)} unique frames in {end}ms.")
@@ -64,38 +66,74 @@ def extractGifFrames(filelike: io.BytesIO, logging: Logger, uniqueness: float) -
     return frames
 
 
-def extractVideoFrames(filepath: str, logging: Logger, uniqueness: float) -> List[Tuple[Image.Image, imagehash.ImageHash]]:
+def extractVideoFrames(filepath: str, logging: Logger, uniqueness: float, workers: int) -> List[Tuple[Image.Image, imagehash.ImageHash]]:
     """
     Extract unique frames from a video file path.
     """
 
-    frames = []
+    queue = Queue()
+    frames = Queue()
     total = 0
+    frameCount = cv2.VideoCapture(filepath).get(cv2.CAP_PROP_FRAME_COUNT)
 
     start = time.time()
-    with VideoCapture(filepath) as cap:
-
-        status, frame = cap.read()
-        while status:
+    def p():
+        while True:
+            frame = queue.get()
+            if frame is None:
+                logging.debug("Exiting worker...")
+                break
+            
             frame = frame[:, :, ::-1]
-
             with Image.fromarray(frame) as frame:
                 hashed = imagehash.average_hash(frame)
                 go = True
 
-                if len(frames) > 1:
-                    for fc in frames:
+                if len(list(frames.queue)) > 1:
+                    for fc in list(frames.queue):
                         if (fc[1] - hashed) < uniqueness:
                             go = False
                             break
-                
                 if go:
-                    frames.append((frame, hashed))
-            
+                    frames.put((frame, hashed))
+            queue.task_done()
+
+    if frameCount <50:
+        logging.warning("There are less than 20 frames, using 1 worker instead as it should do the job.")
+        workers = 1
+
+    # Construct workers
+    funcs = [p] * workers
+
+    # Launch workers
+    for i, t in enumerate(funcs):
+        th = threading.Thread(target=t, daemon=True)
+        th.start()
+        logging.debug(f"Launched worker {i}")
+    
+    # Put frames into queue
+    logging.debug("Extracting frames...")
+    with VideoCapture(filepath) as cap:
+
+        status, frame = cap.read()
+        while status:
+            queue.put(frame)
+
             total += 1
             status, frame = cap.read()
+
+    # Wait for all workers to be finished
+    logging.debug("Waiting for workers to finish...")
+    queue.join()
+
+    logging.debug("Workers finished, exiting them...")
+    for i in range(workers):
+        queue.put(None)
+
     end = round((time.time() - start) * 1000, 2)
+    frames = list(frames.queue)
 
     if logging:
-        logging.debug(f"Extracted {len(frames)}/{total} unique frames in {end}ms.")
+        logging.debug(
+            f"Extracted {len(frames)}/{total} unique frames in {end}ms.")
     return frames
