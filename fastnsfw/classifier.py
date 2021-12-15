@@ -109,6 +109,8 @@ class Classifier:
 
                 frames = helpers.extractVideoFrames(path, self.logging, self.frameUniqueness, self.workers)
                 os.unlink(path)
+        else:
+            raise UnknownContentType(data["contentType"])
     
         if predictionType == "multiple":
             start = time.time()
