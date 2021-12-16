@@ -109,6 +109,8 @@ class Classifier:
 
                 frames = helpers.extractVideoFrames(path, self.logging, self.frameUniqueness, self.workers)
                 os.unlink(path)
+        elif data["contentType"].startswith("image/"):
+            pass 
         else:
             raise UnknownContentType(data["contentType"])
     
