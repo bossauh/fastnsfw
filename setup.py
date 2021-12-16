@@ -2,13 +2,13 @@ from distutils.core import setup
 setup(
     name="fastnsfw",
     packages=["fastnsfw"],
-    version="0.6",
+    version="0.7",
     license="MIT",
     description="NSFW Detection Library",
     author="Philippe Mathew",
     author_email="philmattdev@gmail.com",
     url="https://github.com/bossauh/fastnsfw",
-    download_url="https://github.com/bossauh/fastnsfw/archive/refs/tags/v_06.tar.gz",
+    download_url="https://github.com/bossauh/fastnsfw/archive/refs/tags/v_07.tar.gz",
     keywords=["nsfw", "detection"],
     install_requires=[
         "fluxhelper",
