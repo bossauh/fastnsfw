@@ -76,7 +76,9 @@ class Classifier:
             start = time.time()
 
             with requests.Session() as session:
-                r = session.get(url)
+                r = session.get(url, headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 5.0; Windows NT 5.1; Windows NT 6.0; Windows NT 6.1; Linux; es-VE; rv:52.9.0) Gecko/20100101 Firefox/52.9.0"
+                })
 
             end = round((time.time() - start) * 1000, 2)
             self.logging.debug(f"Getting content from url took {end}ms")
